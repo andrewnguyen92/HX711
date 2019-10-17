@@ -13,8 +13,8 @@ void setup() {
 
 void loop() {
 
-  if (scale.wait_ready_timeout(1000)) {
-    long reading = scale.read();
+  if (scale.block_until_ready_timeout(1000)) {
+    long reading = scale.read_raw_blocking();
     Serial.print("HX711 reading: ");
     Serial.println(reading);
   } else {

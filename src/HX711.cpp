@@ -96,14 +96,19 @@ void HX711::set_gain(byte gain) {
 	}
 
 	digitalWrite(PD_SCK, LOW);
-	read();
+	read_raw_blocking();
 }
 
-long HX711::read() {
-
+long HX711::read_raw_blocking() {
 	// Wait for the chip to become ready.
-	wait_ready();
+	block_until_ready();
 
+	return read_raw();
+}
+
+// Caution: Only call this function when "is_ready()" == true
+long HX711::read_raw()
+{
 	// Define structures for reading data into.
 	unsigned long value = 0;
 	uint8_t data[3] = { 0 };
@@ -184,7 +189,7 @@ long HX711::read() {
 	return static_cast<long>(value);
 }
 
-void HX711::wait_ready(unsigned long delay_ms) {
+void HX711::block_until_ready(unsigned long delay_ms) {
 	// Wait for the chip to become ready.
 	// This is a blocking implementation and will
 	// halt the sketch until a load cell is connected.
@@ -195,7 +200,7 @@ void HX711::wait_ready(unsigned long delay_ms) {
 	}
 }
 
-bool HX711::wait_ready_retry(int retries, unsigned long delay_ms) {
+bool HX711::block_until_ready_retry(int retries, unsigned long delay_ms) {
 	// Wait for the chip to become ready by
 	// retrying for a specified amount of attempts.
 	// https://github.com/bogde/HX711/issues/76
@@ -210,7 +215,7 @@ bool HX711::wait_ready_retry(int retries, unsigned long delay_ms) {
 	return false;
 }
 
-bool HX711::wait_ready_timeout(unsigned long timeout, unsigned long delay_ms) {
+bool HX711::block_until_ready_timeout(unsigned long timeout, unsigned long delay_ms) {
 	// Wait for the chip to become ready until timeout.
 	// https://github.com/bogde/HX711/pull/96
 	unsigned long millisStarted = millis();
@@ -223,10 +228,10 @@ bool HX711::wait_ready_timeout(unsigned long timeout, unsigned long delay_ms) {
 	return false;
 }
 
-long HX711::read_average(byte times) {
+long HX711::read_avg_blocking(byte times) {
 	long sum = 0;
 	for (byte i = 0; i < times; i++) {
-		sum += read();
+		sum += read_raw_blocking();
 		// Probably will do no harm on AVR but will feed the Watchdog Timer (WDT) on ESP.
 		// https://github.com/bogde/HX711/issues/73
 		delay(0);
@@ -234,16 +239,21 @@ long HX711::read_average(byte times) {
 	return sum / times;
 }
 
-double HX711::get_value(byte times) {
-	return read_average(times) - OFFSET;
+double HX711::get_avg_value_blocking(byte times) {
+	return read_avg_blocking(times) - OFFSET;
 }
 
-float HX711::get_units(byte times) {
-	return get_value(times) / SCALE;
+float HX711::get_avg_units_blocking(byte times) {
+	return get_avg_value_blocking(times) / SCALE;
 }
 
-void HX711::tare(byte times) {
-	double sum = read_average(times);
+// Caution: Only call this function when "is_ready()" == true
+float HX711::get_units_direct() {
+	return (read_raw() - OFFSET)/ SCALE;
+}
+
+void HX711::tare_avg_blocking(byte times) {
+	double sum = read_avg_blocking(times);
 	set_offset(sum);
 }
 

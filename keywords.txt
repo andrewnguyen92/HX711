@@ -14,10 +14,13 @@ HX711	KEYWORD1
 
 is_ready	KEYWORD2
 set_gain	KEYWORD2
-read_average	KEYWORD2
-get_value	KEYWORD2
-get_units	KEYWORD2
-tare	KEYWORD2
+read_raw_blocking	KEYWORD2
+read_raw	KEYWORD2
+read_avg_blocking	KEYWORD2
+get_avg_value_blocking	KEYWORD2
+get_avg_units_blocking	KEYWORD2
+get_units_direct    KEYWORD2
+tare_avg_blocking	KEYWORD2
 set_scale	KEYWORD2
 get_scale	KEYWORD2
 set_offset	KEYWORD2
